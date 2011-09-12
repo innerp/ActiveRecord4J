@@ -356,7 +356,7 @@ public class Model implements java.io.Serializable {
 		if (sqlselect != null) {
 			sql += (SQL.SELECT + SQL.BLANK + sqlselect + SQL.BLANK );
 		} else {
-			sql += (SQL.SELECT + SQL.ALL + SQL.BLANK);
+			sql += (SQL.SELECT + SQL.BLANK+SQL.ALL + SQL.BLANK);
 		}
 		select.clear();
 		String sqlfrom = from.getTables();
