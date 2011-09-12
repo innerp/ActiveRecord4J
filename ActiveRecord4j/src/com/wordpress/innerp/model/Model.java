@@ -34,7 +34,7 @@ public class Model implements java.io.Serializable {
 	private Limit limit = new Limit();
 	private OrderBy orderBy = new OrderBy();
 	private Select select = new Select();
-    private From from;
+        private From from = new From();
 	public long insert() {
 		con = ConnectionManager.getConnection();
 		DBBeanProcessor dbp = new DBBeanProcessor();
