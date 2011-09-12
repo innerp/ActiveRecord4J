@@ -340,7 +340,7 @@ public class Model implements java.io.Serializable {
     	int length =tables.length;
     	String temp ="";
     	for(int i = 0; i < length; i++){
-    		temp = tables[i];
+    		temp += tables[i];
     		if (i < length - 1) {
 				temp += ",";
 			}
