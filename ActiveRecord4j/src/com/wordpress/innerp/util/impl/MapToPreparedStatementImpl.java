@@ -21,29 +21,34 @@ public class MapToPreparedStatementImpl implements MapToPStatement{
 
 	public PreparedStatement mapToStatementForUpdate(Map<String, Object> map,
 			Connection conn) {
-
-		String sql = (String) map.get(DBBeanProcessor.ACTION) + "  "
-				+ map.get(DBBeanProcessor.TABLE).toString() + "  SET ";
+        StringBuilder sql = new StringBuilder();
+        sql.append((String) map.get(DBBeanProcessor.ACTION));
+        sql.append(SQL.BLANK);
+        sql.append(map.get(DBBeanProcessor.TABLE).toString());
+        sql.append(" SET");
 		map.remove(DBBeanProcessor.TABLE);
 		map.remove(DBBeanProcessor.ACTION);
 		long id = (Long) map.get("id");
 		map.remove("id");
 		String[] keys = map.keySet().toArray(new String[map.size()]);
 		for (int i = 0; i < keys.length; i++) {
-			sql += (keys[i] + "=? ");
+			sql.append(keys[i]);
+			sql.append("=? ");
 			if (i < keys.length - 1) {
-				sql += ",";
+				sql.append(",");
 			}
 		}
-		sql += (" WHERE id=" + id);
+		sql.append(" WHERE id=");
+		sql.append(id);
 		if (showsql) {
-			log.info(sql);
+			log.info(sql.toString());
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement ps = conn.prepareStatement(sql.toString(),Statement.RETURN_GENERATED_KEYS);
 			for(int i=0;i<keys.length;i++){
 				ps.setObject(i+1,map.get(keys[i]));
 			}
+			sql = null;
 			return ps;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -54,32 +59,38 @@ public class MapToPreparedStatementImpl implements MapToPStatement{
 
 	public PreparedStatement mapToStatementForInsert(Map<String, Object> map,
 			Connection conn) {
-		String sql = (String) map.get(DBBeanProcessor.ACTION) + " INTO "
-				+ map.get(DBBeanProcessor.TABLE).toString() + "(";
+		StringBuilder sql = new StringBuilder();
+		sql.append((String) map.get(DBBeanProcessor.ACTION));
+		sql.append(" INTO ");
+		sql.append(map.get(DBBeanProcessor.TABLE).toString());
+		sql.append("(");
 		map.remove(DBBeanProcessor.ACTION);
 		map.remove(DBBeanProcessor.TABLE);
 		map.remove("id");
 		String[] columns = map.keySet().toArray(new String[map.size()]);
-		String values = "VALUES(";
+		StringBuilder values = new StringBuilder();
+		values.append("VALUES(");
 		for (int i = 0; i < columns.length; i++) {
-			sql += columns[i];
-			values += "?";
+			sql.append(columns[i]);
+			values.append("?");
 			if (i < columns.length - 1) {
-				sql += ",";
-				values += ",";
+				sql.append(",");
+				values.append(",");
 			}
 		}
-		sql += ")  ";
-		values += ")";
-		sql += values;
+		sql.append(")  ");
+		values.append(")");
+		sql.append(values.toString());
 		if (showsql) {
-			log.info(sql);
+			log.info(sql.toString());
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement ps = conn.prepareStatement(sql.toString(),Statement.RETURN_GENERATED_KEYS);
 			for(int i=0;i<columns.length;i++){
 				ps.setObject(i+1,map.get(columns[i]));
 			}
+			values = null;
+			sql = null;
 			return ps;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -88,13 +99,20 @@ public class MapToPreparedStatementImpl implements MapToPStatement{
 
 	}
 	public PreparedStatement mapToStatementForDelete(Map<String,Object> map,Connection conn){
-		String sql = (String) map.get(DBBeanProcessor.ACTION) + " FROM "
-		+ map.get(DBBeanProcessor.TABLE).toString() + " "+SQL.WHERE +" id="+map.get("id").toString();
+		StringBuilder sql = new StringBuilder();
+		sql.append((String) map.get(DBBeanProcessor.ACTION));
+		sql.append(" FROM ");
+		sql.append(map.get(DBBeanProcessor.TABLE).toString());
+		sql.append(SQL.BLANK);
+		sql.append(SQL.WHERE );
+		sql.append(" id=?");
 		if (showsql) {
-			log.info(sql);
+			log.info(sql.toString());
 		}
 		try {
-			PreparedStatement ps = conn.prepareStatement(sql);
+			PreparedStatement ps = conn.prepareStatement(sql.toString());
+			ps.setLong(1,(Long)map.get("id"));
+			sql = null;
 			return ps;
 		} catch (SQLException e) {
 			e.printStackTrace();
