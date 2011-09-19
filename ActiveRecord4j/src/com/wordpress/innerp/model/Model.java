@@ -34,7 +34,7 @@ public class Model implements java.io.Serializable {
 	private Limit limit = new Limit();
 	private OrderBy orderBy = new OrderBy();
 	private Select select = new Select();
-        private From from = new From();
+    private From from = new From();
 	public long insert() {
 		con = ConnectionManager.getConnection();
 		DBBeanProcessor dbp = new DBBeanProcessor();
@@ -236,17 +236,13 @@ public class Model implements java.io.Serializable {
 	}
 
 	private String table() {
-		String table = "";
-		if (getPrefix() != null) {
-			table = getPrefix() + getClass().getSimpleName();
-		} else {
-			table = getClass().getSimpleName();
-		}
-		return table;
+		StringBuilder table = new StringBuilder();
+		if (getPrefix() != null)table.append(getPrefix());	
+		table.append(getClass().getSimpleName());
+		return table.toString();
 	}
 
 	public Model page(int page, int size) {
-
 		limit(page, size);
 		return this;
 	}
@@ -319,58 +315,74 @@ public class Model implements java.io.Serializable {
 	}
 
 	public Model select(String... columns) {
+		StringBuilder temp = new StringBuilder();
 		if (columns == null||columns.length==0) {
 			return this;
 		}
 		int length = columns.length;
-		String temp = "";
 		for (int i = 0; i < length; i++) {
-			temp += columns[i];
+			temp.append(columns[i]);
 			if (i < length - 1) {
-				temp += ",";
+				temp.append(",");
 			}
 		}
-		select.select(temp);
+		select.select(temp.toString());
+		temp=null;
 		return this;
 	}
     public Model from(String... tables){
+    	StringBuilder temp = new StringBuilder();
     	if(tables==null||tables.length==0){
     		return this;
     	}
     	int length =tables.length;
-    	String temp ="";
     	for(int i = 0; i < length; i++){
-    		temp += tables[i];
+    		temp.append(tables[i]);
     		if (i < length - 1) {
-				temp += ",";
+				temp.append(",");
 			}
     		
     	}
-    	from.from(temp);
+    	from.from(temp.toString());
+    	temp = null;
     	return this;
     }
 	private PreparedStatement sql(Connection con) {
+		StringBuilder sql = new StringBuilder();
 		List<Object> list = new ArrayList<Object>();
-		String sql = "";
 		String sqlselect = select.getColumns();
 		if (sqlselect != null) {
-			sql += (SQL.SELECT + SQL.BLANK + sqlselect + SQL.BLANK );
+			sql.append(SQL.SELECT);
+			sql.append(SQL.BLANK);
+			sql.append(sqlselect);
+			sql.append(SQL.BLANK);
 		} else {
-			sql += (SQL.SELECT + SQL.BLANK+SQL.ALL + SQL.BLANK);
+			sql.append(SQL.SELECT);
+			sql.append(SQL.BLANK);
+			sql.append(SQL.ALL);
+			sql.append(SQL.BLANK);
 		}
 		select.clear();
 		String sqlfrom = from.getTables();
 		if(sqlfrom!=null){
-			sql +=(SQL.FROM+SQL.BLANK+sqlfrom);
+			sql.append(SQL.FROM);
+			sql.append(SQL.BLANK);
+			sql.append(sqlfrom);
 		}else{
-			sql+=(SQL.FROM+SQL.BLANK+table());
+			sql.append(SQL.FROM);
+			sql.append(SQL.BLANK);
+			sql.append(table());
 		}
-		from.clear();	
-		String wheresql = SQL.BLANK + SQL.WHERE + SQL.BLANK;
+		from.clear();
+		StringBuilder wheresql = new StringBuilder();
+		wheresql.append(SQL.BLANK);
+		wheresql.append(SQL.WHERE);
+		wheresql.append(SQL.BLANK);
 		List<Map<String, Object>> whereList = where.getList();
 		int whereSize = whereList.size();
 		if (whereSize > 0) {
-			sql += wheresql;
+			sql.append(wheresql.toString());
+			wheresql = null;
 			for (int i = 0; i < whereSize; i++) {
 				Map<String, Object> whereMap = whereList.get(i);
 				int word = (Integer) whereMap.get("word");
@@ -385,25 +397,30 @@ public class Model implements java.io.Serializable {
 							e.printStackTrace();
 						}
 					} else {
-						sql += SQL.BLANK + "and" + SQL.BLANK;
+						sql.append(SQL.BLANK);
+						sql.append("AND");
+						sql.append(SQL.BLANK);
 					}
 					break;
 				case Where.EQUAL:
 					String[] keys = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys[0] + "=?");
+					sql.append(keys[0]);
+					sql.append("=?");
 					list.add(whereMap.get(keys[0]));
 					break;
 				case Where.GREATER_THAN:
 					String[] keys1 = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys1[0] + ">?");
+					sql.append(keys1[0]);
+					sql.append(">?");
 					list.add(whereMap.get(keys1[0]));
 					break;
 				case Where.GREATER_THAN_OR_EQUAL:
 					String[] keys2 = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys2[0] + ">=?");
+					sql.append(keys2[0]);
+					sql.append(">=?");
 					list.add(whereMap.get(keys2[0]));
 					break;
 				case Where.OR:
@@ -415,26 +432,32 @@ public class Model implements java.io.Serializable {
 							e.printStackTrace();
 						}
 					} else {
-						sql += SQL.BLANK + "or" + SQL.BLANK;
+						sql.append(SQL.BLANK);
+						sql.append("or");
+						sql.append(SQL.BLANK);
 					}
 					break;
 				case Where.LEASS_THAN:
 					String[] keys3 = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys3[0] + "<?");
+					sql.append(keys3[0]);
+					sql.append("<?");
 					list.add(whereMap.get(keys3[0]));
 					break;
 				case Where.LEASS_THAN_OR_EQUAL:
 
 					String[] keys4 = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys4[0] + "<=?");
+					sql.append(keys4[0]);
+					sql.append("<=?");
 					list.add(whereMap.get(keys4[0]));
 					break;
 				case Where.LIKE:
 					String[] keys5 = whereMap.keySet().toArray(
 							new String[whereMap.size()]);
-					sql += (keys5[0] + SQL.BLANK + "like  ?");
+					sql.append(keys5[0]);
+					sql.append(SQL.BLANK);
+					sql.append("like  ?");
 					list.add(whereMap.get(keys5[0]));
 					break;
 
@@ -448,16 +471,18 @@ public class Model implements java.io.Serializable {
 		List<Map<String, Object>> orderByList = orderBy.getList();
 		int orderSize = orderByList.size();
 		if (orderSize > 0) {
-			sql += (SQL.BLANK + SQL.ORDERBY + SQL.BLANK);
+			sql.append(SQL.BLANK);
+			sql.append(SQL.ORDERBY);
+			sql.append(SQL.BLANK);
 			for (int i = 0; i < orderSize; i++) {
 				Map<String, Object> orderMap = orderByList.get(i);
 				String[] key = orderMap.keySet().toArray(new String[1]);
 				if (key[0].equals(OrderBy.ASC)) {
-					sql += "? asc ";
+					sql.append("? asc ");
 					list.add(orderMap.get(key));
 
 				} else {
-					sql += "? desc ";
+					sql.append("? desc ");
 					list.add(orderMap.get(key));
 				}
 			}
@@ -467,12 +492,15 @@ public class Model implements java.io.Serializable {
 		int limitSize = limitList.size();
 		if (limitSize > 0) {
 			String[] key = limitList.keySet().toArray(new String[1]);
-			sql += SQL.BLANK + "limit " + key[0] + "," + limitList.get(key[0]);
+			sql.append(SQL.BLANK);
+			sql.append("limit ");
+			sql.append(key[0]);
+			sql.append(limitList.get(key[0]));
 			limit.clear();
 		}
-		log.info(sql);
+		log.info(sql.toString());
 		try {
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(sql.toString());
 			int objectSize = list.size();
 			log.info("objectSzie:" + objectSize);
 			for (int i = 0; i < objectSize; i++) {
@@ -482,6 +510,7 @@ public class Model implements java.io.Serializable {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		sql = null;
 		return null;
 
 	}
