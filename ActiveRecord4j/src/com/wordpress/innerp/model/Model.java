@@ -102,7 +102,12 @@ public class Model implements java.io.Serializable {
 	public <T extends Model> T findOne() {
 		con = ConnectionManager.getConnection();
 		limit(0, 1);
-		PreparedStatement ps = sql(con);
+		PreparedStatement ps=null;
+		try {
+			ps = sql(con);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		ResultSet rs = null;
 		try {
 			rs = ps.executeQuery();
@@ -123,7 +128,12 @@ public class Model implements java.io.Serializable {
 	public int count() {
 		select("COUNT(*)");
 		con = ConnectionManager.getConnection();
-		PreparedStatement ps = sql(con);
+		PreparedStatement ps=null;
+		try {
+			ps = sql(con);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		ResultSet rs = null;
 		try {
 			rs = ps.executeQuery();
@@ -144,7 +154,12 @@ public class Model implements java.io.Serializable {
 	public <T extends Model> List<T> find() {
 
 		con = ConnectionManager.getConnection();
-		PreparedStatement ps = sql(con);
+		PreparedStatement ps=null;
+		try {
+			ps = sql(con);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		ResultSet rs = null;
 		try {
 			rs = ps.executeQuery();
@@ -163,7 +178,12 @@ public class Model implements java.io.Serializable {
 
 	public List<Map<String, Object>> findColumns() {
 		con = ConnectionManager.getConnection();
-		PreparedStatement ps = sql(con);
+		PreparedStatement ps = null;
+		try {
+			ps = sql(con);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		ResultSet rs = null;
 		try {
 
@@ -254,7 +274,27 @@ public class Model implements java.io.Serializable {
 		where.eq(columnName, arg);
 		return this;
 	}
-
+    /**
+     * condition may like this "name='tai'" or "number = 9"
+     * @throws Exception 
+     * 
+     * */
+    public Model eq(String condition) {
+    	if(!condition.contains("="))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	String[] parts = condition.split("=");
+    	String value =parts[1];
+    	if(value.contains("'")){
+    		value = value.replace("'","");
+    	}
+    	where.eq(parts[0], value);
+    	value = null;
+    	return this;
+    }
 	public Model and() {
 		where.and();
 		return this;
@@ -264,22 +304,80 @@ public class Model implements java.io.Serializable {
 		where.gt(columnName, arg);
 		return this;
 	}
-
+    public Model gt(String condition){
+    	if(!condition.contains(">"))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		String[] parts = condition.split(">");
+		String value = parts[1];
+		if(value.contains("'")){
+			value = value.replace("'", "");
+		}
+		where.gt(parts[0], value);
+    	return this;
+    }
 	public Model gtOreq(String columnName, Object arg) {
 		where.gtOreq(columnName, arg);
 		return this;
 	}
-
+    public Model gtOreq(String condition){
+    	if(!condition.contains(">="))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		String[] parts = condition.split(">=");
+		String value = parts[1];
+		if(value.contains("'")){
+			value = value.replace("'", "");
+		}
+		where.gtOreq(parts[0], value);
+    	return this;
+    }
 	public Model lt(String columnName, Object arg) {
 		where.lt(columnName, arg);
 		return this;
 	}
-
+    public Model lt(String condition){
+    	if(!condition.contains("<"))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	String[] parts = condition.split("<");
+    	String value =parts[1];
+    	if(value.contains("'")){
+    		value = value.replace("'","");
+    	}
+    	where.lt(parts[0], value);
+    	value = null;
+    	return this;
+    }
 	public Model ltOreq(String columnName, Object arg) {
 		where.ltOreq(columnName, arg);
 		return this;
 	}
-
+    public Model ltOreq(String condition){
+    	if(!condition.contains("<="))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	String[] parts = condition.split("<=");
+    	String value =parts[1];
+    	if(value.contains("'")){
+    		value = value.replace("'","");
+    	}
+    	where.ltOreq(parts[0], value);
+    	value = null;
+    	return this;
+    }
 	public Model or() {
 		where.or();
 		return this;
@@ -289,7 +387,22 @@ public class Model implements java.io.Serializable {
 		where.like(columnName, arg);
 		return this;
 	}
-
+	public Model like(String condition) {
+		condition = condition.toLowerCase();
+		if(!condition.contains("like"))
+			try {
+				throw new Exception("输入不合法");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	String[] parts = condition.split("like");
+    	String value =parts[1];
+    	value = value.replace("'","");
+    	value = value.replace("%","");
+    	where.like(parts[0], value);
+    	value = null;
+		return this;
+	}
 	/**
 	 * limit
 	 * */
@@ -313,7 +426,6 @@ public class Model implements java.io.Serializable {
 		return this;
 
 	}
-
 	public Model select(String... columns) {
 		StringBuilder temp = new StringBuilder();
 		if (columns == null||columns.length==0) {
@@ -347,7 +459,7 @@ public class Model implements java.io.Serializable {
     	temp = null;
     	return this;
     }
-	private PreparedStatement sql(Connection con) {
+	private PreparedStatement sql(Connection con) throws Exception {
 		StringBuilder sql = new StringBuilder();
 		List<Object> list = new ArrayList<Object>();
 		String sqlselect = select.getColumns();
@@ -391,11 +503,8 @@ public class Model implements java.io.Serializable {
 				case Where.AND:
 					if (i == 0 || i == (whereSize - 1)) {
 						log.warning("and的位置错误，请检查你调用and与其他条件函数的顺序!");
-						try {
-							throw new Exception("and的位置错误，请检查你调用and与其他条件函数的顺序!");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+						throw new Exception("and的位置错误，请检查你调用and与其他条件函数的顺序!");
+						
 					} else {
 						sql.append(SQL.BLANK);
 						sql.append("AND");
@@ -426,11 +535,7 @@ public class Model implements java.io.Serializable {
 				case Where.OR:
 					if (i == 0 || i == (whereSize - 1)) {
 						log.warning("or的位置错误，请检查你调用and与其他条件函数的顺序!");
-						try {
-							throw new Exception("or的位置错误，请检查你调用and与其他条件函数的顺序!");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+					    throw new Exception("or的位置错误，请检查你调用and与其他条件函数的顺序!");
 					} else {
 						sql.append(SQL.BLANK);
 						sql.append("or");
@@ -518,4 +623,5 @@ public class Model implements java.io.Serializable {
 	public Connection connection() {
 		return ConnectionManager.getConnection();
 	}
+	
 }
