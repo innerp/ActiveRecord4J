@@ -26,8 +26,23 @@ public class DBBeanProcessor extends BeanProcessorImpl {
 		if(result.containsKey("class")){
 			result.remove("class");
 		}
-		result.put(TABLE_NO_PREFIX, bean.getClass().getSimpleName());
-		return result;
+		@SuppressWarnings("rawtypes")
+		Class claz = bean.getClass();
+		String table = "";
+		try {
+			 table = (String) claz.getMethod("table", null).invoke(bean, null);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		}
+		result.put(TABLE, table);
 	}
 	
 	public Map<String,Object> toInsertMap(Object bean){
