@@ -25,7 +25,9 @@ public class MapToPreparedStatementImpl implements MapToPStatement{
         sql.append((String) map.get(DBBeanProcessor.ACTION));
         sql.append(SQL.BLANK);
         sql.append(map.get(DBBeanProcessor.TABLE).toString());
-        sql.append(" SET");
+        sql.append(SQL.BLANK);
+        sql.append("SET");
+        sql.append(SQL.BLANK);
 		map.remove(DBBeanProcessor.TABLE);
 		map.remove(DBBeanProcessor.ACTION);
 		long id = (Long) map.get("id");
