@@ -1,5 +1,6 @@
 package com.wordpress.innerp.util.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 /**
  * 
@@ -26,7 +27,6 @@ public class DBBeanProcessor extends BeanProcessorImpl {
 		if(result.containsKey("class")){
 			result.remove("class");
 		}
-		@SuppressWarnings("rawtypes")
 		Class claz = bean.getClass();
 		String table = "";
 		try {
@@ -43,24 +43,17 @@ public class DBBeanProcessor extends BeanProcessorImpl {
 			e.printStackTrace();
 		}
 		result.put(TABLE, table);
+		return result;
 	}
 	
 	public Map<String,Object> toInsertMap(Object bean){
 		Map<String,Object> result = beantoMap(bean);
 		result.put(ACTION,INSERT);
-		String tableName =(result.get(PRE_FIX)==null?"":result.get(PRE_FIX).toString())+result.get(TABLE_NO_PREFIX).toString();
-		result.remove(PRE_FIX);
-		result.remove(TABLE_NO_PREFIX);
-		result.put(TABLE, tableName);
 		return result;
 	}
 	public Map<String,Object> toUpdate(Object bean){
 		Map<String,Object> result = beantoMap(bean);
 		result.put(ACTION,UPDATE);
-		String tableName =(result.get(PRE_FIX)==null?"":result.get(PRE_FIX).toString())+result.get(TABLE_NO_PREFIX).toString();
-		result.remove(PRE_FIX);
-		result.remove(TABLE_NO_PREFIX);
-		result.put(TABLE, tableName);
 		String[] keys = result.keySet().toArray(new String[result.size()]);
 		for(String key:keys){
 			Object temp = result.get(key);
@@ -73,10 +66,6 @@ public class DBBeanProcessor extends BeanProcessorImpl {
 	public Map<String,Object> toDelete(Object bean){
 		Map<String,Object> result = beantoMap(bean);
 		result.put(ACTION,DELETE);
-		String tableName =(result.get(PRE_FIX)==null?"":result.get(PRE_FIX).toString())+result.get(TABLE_NO_PREFIX).toString();
-		result.remove(PRE_FIX);
-		result.remove(TABLE_NO_PREFIX);
-		result.put(TABLE, tableName);
 		return result;
 		
 	}
