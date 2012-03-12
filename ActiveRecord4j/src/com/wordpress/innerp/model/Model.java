@@ -34,7 +34,7 @@ public class Model implements java.io.Serializable {
 	private Limit limit = new Limit();
 	private OrderBy orderBy = new OrderBy();
 	private Select select = new Select();
-    private From from = new From();
+        private From from = new From();
 	public long insert() {
 		con = ConnectionManager.getConnection();
 		DBBeanProcessor dbp = new DBBeanProcessor();
@@ -113,7 +113,7 @@ public class Model implements java.io.Serializable {
 			rs = ps.executeQuery();
 			return (T) (new BeanProcessorImpl().mapToBean(
 					new ResultSetProcessorImpl().resultToMap(rs), getClass()));
-		} catch (SQLException e) {
+		} catch (SQLException e) { 
 			e.printStackTrace();
 		} finally {
 
